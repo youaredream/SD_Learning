@@ -687,4 +687,3 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 
 
 
-师兄下午好，我把最新的进度和部署过程都写进报告里面了（https://github.com/youaredream/SD_Learning.git）。为了节省资源，我配了一个能尽可能满足这个的服务器（NVIDA T4 16G），然后在配置和测试的过程中，按照默认的参数配置还是会出现Out of memory,后面经过测试，我把生成视频的帧率调到12左右，能刚好跑起来，再高就还是oom。而且在这种情况下，iter500次需要2h左右。然后aniclipart论文中用的NVIDIA RTX A6000 26G的，他们应该是跑的24帧或者更高的，迭代500次只花了25分钟。所以我跑出来的从图像流畅度稍微会差一点，主要还是帧率有点太低了。其中还有一个问题，对于极少部分的贴图，pydiffvg解析并生成帧的过程中，可能会丢掉一部分比如眼睛之类的，可能就是我svg贴图找的有点复杂了。
