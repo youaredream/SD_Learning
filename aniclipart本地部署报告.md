@@ -41,7 +41,7 @@ AniClipart项目旨在使用文本提示和机器学习技术为静态SVG（可�
 4. **保存结果**：
    - 将生成的动画保存为视频文件，并可选择上传到WandB进行结果追踪和可视化。
 
-### 一、环境搭建
+### 一、环境搭建（基于windows 11笔记本）
 
 ### 1、使用Conda创建虚拟环境及安装VS2019
 
@@ -228,6 +228,8 @@ setup(
 
 ### 二、测试运行
 
+### 2.1 给定demo
+
 **单层动画 (Single-layer animation)**:
 
 ```
@@ -270,7 +272,302 @@ bash scripts/run_layer_aniclipart.sh
 
 ![www.alltoall.net_init_vid_kuNC0KcSIj](aniclipart本地部署报告.assets/www.alltoall.net_init_vid_kuNC0KcSIj.gif)
 
-### 三、常见问题
+### 2.2 自制作贴图
+
+（1）**使用picosvg简化**，PicoSVG是一个专门用于简化SVG图形的强大工具，通过一系列精心设计的转换规则，将任意SVG优化为“pico”版本，即更轻量级且结构更加整洁的格式。它确保每个SVG遵循严格的结构准则，从而提升图形在各种应用中的表现力和兼容性。
+
+```shell
+#格式化
+picosvg shark_input.svg > shark.svg
+```
+
+![image-20240731140919834](aniclipart本地部署报告.assets/image-20240731140919834.png)
+
+（2）**Keypoint Detection**：生成其轮廓，并对轮廓进行简化，生成骨架和关键点。
+
+```shell
+#安装依赖
+conda install -c conda-forge scikit-geometry
+#运行 把target改成对应的名字
+python -m preprocess.keypoint_detection
+```
+
+![image-20240731140850041](aniclipart本地部署报告.assets/image-20240731140850041.png)
+
+![image-20240731140906728](aniclipart本地部署报告.assets/image-20240731140906728.png)|<img src="aniclipart本地部署报告.assets/image-20240731140928169.png" alt="image-20240731140928169" style="zoom:80%;" />
+
+（3）格式化大小
+
+```
+#修改target
+python -m preprocess.svg_resize
+```
+
+![shark_keypoint_scaled](aniclipart本地部署报告.assets/shark_keypoint_scaled.svg)![shark_scaled](aniclipart本地部署报告.assets/shark_scaled.svg)
+
+（4）添加描述
+
+```
+#打开 utils/util.py 文件，找到 get_clipart_caption 函数，查看 files_to_captions 字典的定义。
+添加如下定义
+'shark': 'A shark swimming in the ocean'
+```
+
+（5）开始生成
+
+```bash
+bash scripts/run_aniclipart.sh
+```
+
+
+
+![www.alltoall.net_init_vid_g4KGU_Cnbo](aniclipart本地部署报告.assets/www.alltoall.net_init_vid_g4KGU_Cnbo.gif)
+
+由于显存只有6G，出现Out of memory.
+
+![image-20240731181714719](aniclipart本地部署报告.assets/image-20240731181714719.png)
+
+其他效果
+
+![www.alltoall.net_init_vid_UjK8uwpamN](aniclipart本地部署报告.assets/www.alltoall.net_init_vid_UjK8uwpamN.gif)
+
+![www.alltoall.net_init_vid_sxrYT19W6P](aniclipart本地部署报告.assets/www.alltoall.net_init_vid_sxrYT19W6P.gif)
+
+![www.alltoall.net_init_vid_iM8u4JDzhU](aniclipart本地部署报告.assets/www.alltoall.net_init_vid_iM8u4JDzhU.gif)
+
+![www.alltoall.net_init_vid_AiE068kGNR](aniclipart本地部署报告.assets/www.alltoall.net_init_vid_AiE068kGNR.gif)
+
+### 2.3 参数影响
+
+#### (1) num_frames=24     num_iter=5
+
+由于显存有限，所以只使用CPU进行测试。
+
+```bash
+   --bezier_radius 0.01 \
+        --augment_frames \
+        --lr_bezier 0.005 \
+        --num_iter 5 \
+        --num_frames 24 \
+        --inter_dim 128 \
+        --loop_num 2 \
+        --guidance_scale 50 \
+        --opt_bezier_points_with_mlp \
+        --normalize_input \
+        --opt_with_skeleton \
+        --skeleton_weight 25 \
+        --fix_start_points \
+        --arap_weight 3000 \
+        --opt_with_layered_arap \
+        --max_tri_area 30 \
+        --min_tri_degree 20 \
+        --need_subdivide
+```
+
++ num_iter 调节运动范围，如果默认500，需要训练时间较久。
++ num_frames 生成图像的帧数
+
+<img src="aniclipart本地部署报告.assets/HQ_gif_iter0.gif" alt="HQ_gif_iter0" style="zoom: 33%;" />
+
+#### (2) num_frames=12     num_iter=5
+
+<img src="aniclipart本地部署报告.assets/HQ_gif_iter0-17225680376793.gif" alt="HQ_gif_iter0" style="zoom:33%;" />
+
+#### (3) num_frames=24   num_iter=20
+
+在贝塞尔曲线控制点不变的情况下，可以看出当num_iter次数增大，整体的动作幅度会随之增大，
+
+<img src="aniclipart本地部署报告.assets/HQ_gif-17225817258101.gif" alt="HQ_gif" style="zoom:33%;" />
+
+### 三、使用AWS服务器部署
+
+### 3.1 服务器基本配置
+
++ 4vcpu、100G
++ g4dn-xlarge 16GB内存、1个NVIDIA T4 GPU
++ ubuntu 20.04
++ cuda 11.8
+
+```bash
+#安装依赖项
+sudo apt install build-essential git wget
+#安装conda
+wget https://repo.anaconda.com/miniconda/Miniconda3-py38_22.11.1-1-Linux-x86_64.sh
+Miniconda3-py38_22.11.1-1-Linux-x86_64.sh
+source ~/.bashrc
+```
+
++  安装CUDA
+
+![image-20240803231906110](aniclipart本地部署报告.assets/image-20240803231906110.png)
+
+```bash
+因为安装Cuda11.8需要gcc-9、g++-9,版本，ubuntu20.04直接安装的是gcc-13，如果安装gcc-8也不行，所以最终试下来是gcc-9
+#1 安装gcc g++
+conda install -c conda-forge gcc=9 gxx=9
+或者
+sudo apt-get install gcc-9 g++-9
+#2 安装cmake
+pip install cmake
+# 安装N卡驱动
+ lspci | grep -i nvidia #查看是否有gpu显卡
+ ubuntu-drivers devices #自动检测你的显卡型号和推荐安装的驱动型号
+ sudo ubuntu-drivers autoinstall #可以自动选择合适驱动版本安装
+ sudo gedit ~/.bashrc #设置环境变量，写入下面两行
+ export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+nvidia-smi #输入验证
+#安装cuda
+wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
+sudo sh cuda_11.8.0_520.61.05_linux.run
+#安装cudnn，一定要下载tar格式！
+从NVIDIA官网的cudnn下载页面上下载与安装CUDA对应的cudnn，网址为https://developer.nvidia.com/rdp/cudnn-download。选择Ubuntu20.04系统下，CUDA11.8对应的版本，下载完后使用tar -zxvf解压
+然后执行
+cp cuda/lib64/* /usr/local/cuda-11.7/lib64/
+cp cuda/include/* /usr/local/cuda-11.7/include/
+#输入验证cudnn
+cat /usr/local/cuda-11.7/include/cudnn_version.h | grep CUDNN_MAJOR -A 2 
+```
+
+
+
++  安装Aniclipart
+
+```bash
+#1 AniClipart
+git clone https://github.com/kingnobro/AniClipart.git
+cd AniClipart
+#2 创建虚拟环境
+conda create -n aniclipart python=3.8
+conda activate aniclipart
+#3 安装依赖项
+pip install torch==2.3.0 
+pip install torchaudio==2.3.0 
+pip install torchvision==0.18.0 
+pip install ipywidgets 
+pip install diffusers 
+pip install easydict 
+pip install cssutils 
+pip install shapely 
+pip install lightning 
+pip install imageio==2.34.2 
+pip install imageio-ffmpeg==0.4.7 
+pip install scikit-image 
+pip install wandb 
+pip install moviepy 
+pip install matplotlib 
+pip install cairosvg 
+pip install einops 
+pip install transformers 
+pip install accelerate 
+pip install opencv-python 
+pip install triangle 
+pip install bezier 
+```
+
++  安装diffvg
+
+```
+git clone https://github.com/BachiLi/diffvg.git
+cd diffvg
+git submodule update --init --recursive
+python setup.py install
+```
+
+中途可能遇到的问题
+
+（1）  from /home/ubuntu/AniClipart/diffvg/diffvg.cpp:20: /home/ubuntu/miniconda3/envs/aniclipart/include/python3.8/Python.h:44:10: fatal error: crypt.h: No such file or directory   44 | #include <crypt.h>      |          ^~~~~~~~~ compilation terminated.
+
+是因为在构建过程中缺少 `crypt.h` 头文件。`crypt.h` 是一个系统头文件，通常包含在 `libxcrypt-dev` 包中
+
+```bash
+#解决方案
+sudo apt-get update
+sudo apt-get install libc6-dev
+conda install --channel=conda-forge libxcrypt
+#拷贝到虚拟环境
+cp /usr/include/crypt.h /home/ubuntu/miniconda/envs/anlicpart/include/python3.8/crypt.h
+```
+
+
+
+(2)CMake Error at CMakeLists.txt:3 (project):  The CMAKE_CXX_COMPILER:     /home/ubuntu/miniconda3/envs/aniclipart/bin/x86_64-conda-linux-gnu-c++   is not a full path to an existing compiler tool.   Tell CMake where to find the compiler by setting either the environment  variable "CXX" or the CMake cache entry CMAKE_CXX_COMPILER to the full path  to the compiler, or to the compiler name if it is in the PATH.
+
+遇到这个问题一方面可能是CMake 无法找到指定的编译器路径。要确保 Conda 环境中的 GCC 9 路径正确，并且 CMake 能够识别这些路径。
+
+有可能是gcc版本太多有冲突，要学会如何切换gcc、g++版本
+
+```bash
+#按数字选择版本
+sudo update-alternatives --config gcc
+sudo update-alternatives --config g++
+```
+
+也有可能是环境变量没有配置好
+
+```bash
+#编辑
+vim ~/.bashrc
+写入
+export PATH=/usr/local/gcc-9.3.0/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/gcc-9.3.0/lib64:$LD_LIBRARY_PATH
+#重新加载
+source ~/.bashrc
+#验证
+gcc --version
+g++ --version
+```
+
+### 3.2 运行测试
+
+```bash
+#运行单层anilicpart
+bash scripts/run_aniclipart.sh
+```
+
+测试中遇到的主要问题-CUDA out of memory
+
+<img src="aniclipart本地部署报告.assets/image-20240803212333817.png" style="zoom:150%;" />
+
+出现这个问题是显存不足的问题，通过查找资料
+
+有如下解决方案：
+
+（1）逐步调小PYTORCH_CUDA_ALLOC_CONF，但是会损失性能。
+
+```bash
+set PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:16
+```
+
+调了好几次，没有效果
+
+（2）不累加loss及 `torch.cuda.empty_cache()` 手动清理 失活内存
+
+我在for循环每次迭代后面使用了torch.cuda.empty_cache()，但是依然不行
+
+（2）需要调整模型大小及精度
+
+<img src="aniclipart本地部署报告.assets/image-20240803234259826.png" alt="image-20240803234259826" style="zoom: 80%;" />
+
+这里必须要牺牲帧数去换取空间，我尝试了几个帧数24、20、18、16、12。
+
+num_frames=12最终可以成功跑起来，虽然出来的动作会不太流畅，但是能在显存16G的情况下跑起来。
+
+论文中使用的n NVIDIA RTX A6000  26GB，能轻松跑起来24帧数的，且迭代500次只需要30分钟。
+
+通过这次，谈谈对out of memory的认识
+
+### 3.3测试结果
+
+(1)使用原有的woman_dance进行50次iter和500次对比
+
+![image-20240804092455668](aniclipart本地部署报告.assets/image-20240804092455668.png)|<img src="aniclipart本地部署报告.assets/womandance_50.gif" alt="womandance_50" style="zoom:25%;" />||<img src="aniclipart本地部署报告.assets/womandance_500.gif" alt="womandance_500" style="zoom:25%;" />
+
+（2）自制作贴图
+
+
+
+### 四、常见问题
 
 （1）LINK : fatal error LNK1104:  “python38.lib”
 
@@ -306,7 +603,17 @@ bash scripts/run_layer_aniclipart.sh
 
 像这种之类的，在aniclipart仓库里面的issue有些可能会有。其他的按照这个步骤来应该都没什么问题。 
 
-### 四、相关链接
+(5)安装了CUDA 、pytorch之后无法调用GPU
+
+直接在终端里pip install torch torchvision torchaudio的版本是适用于只有CPU的，所以是无法调用的，从官网里面的[PyTorch](https://pytorch.org/)安装。如果遇到网络超时直接点对应的链接，下载对应的版本到本地再安装
+
+```
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+![image-20240731165917400](aniclipart本地部署报告.assets/image-20240731165917400.png)
+
+### 五、相关链接
 
 在部署aniclipart的过程中遇到了很多问题，非常感谢github社区及CSDN上创作者门的帮助。以下是一些链接。
 
