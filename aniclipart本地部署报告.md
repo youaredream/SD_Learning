@@ -43,7 +43,7 @@ AniClipart项目旨在使用文本提示和机器学习技术为静态SVG（可�
 
 ### 一、环境搭建（基于windows 11笔记本）
 
-### 1、使用Conda创建虚拟环境及安装VS2019
+#### 1.1 使用Conda创建虚拟环境及安装VS2019
 
 ​		这里推荐使用conda3-py38的版本，一开始用的最新的conda3后面跑起来有点问题，也可能是我自己弄的环境太混乱了。
 
@@ -65,7 +65,7 @@ conda activate aniclipart
 
 ![image-20240730175136311](aniclipart本地部署报告.assets/image-20240730175136311.png)
 
-### 2、安装相关依赖
+#### 1.2 安装相关依赖
 
 ​		相关依赖在requirements.txt中给出，但是因为有版本冲突问题，我这里是自己单独下的。
 
@@ -107,7 +107,7 @@ pip install triangle -i http://mirrors.aliyun.com/pypi/simple --trusted-host mir
 pip install bezier -i http://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com
 ```
 
-### 3、*安装Diffvg
+#### 1.3 *安装Diffvg
 
 ​	这步是最容易出错误的，弄了两天一夜才搞定。
 
@@ -228,7 +228,7 @@ setup(
 
 ### 二、测试运行
 
-### 2.1 给定demo
+#### 2.1 给定demo
 
 **单层动画 (Single-layer animation)**:
 
@@ -272,7 +272,7 @@ bash scripts/run_layer_aniclipart.sh
 
 ![www.alltoall.net_init_vid_kuNC0KcSIj](aniclipart本地部署报告.assets/www.alltoall.net_init_vid_kuNC0KcSIj.gif)
 
-### 2.2 自制作贴图
+#### 2.2 自制作贴图
 
 （1）**使用picosvg简化**，PicoSVG是一个专门用于简化SVG图形的强大工具，通过一系列精心设计的转换规则，将任意SVG优化为“pico”版本，即更轻量级且结构更加整洁的格式。它确保每个SVG遵循严格的结构准则，从而提升图形在各种应用中的表现力和兼容性。
 
@@ -337,9 +337,9 @@ bash scripts/run_aniclipart.sh
 
 ![www.alltoall.net_init_vid_AiE068kGNR](aniclipart本地部署报告.assets/www.alltoall.net_init_vid_AiE068kGNR.gif)
 
-### 2.3 参数影响
+#### 2.3 参数影响
 
-#### (1) num_frames=24     num_iter=5
+##### (1) num_frames=24     num_iter=5
 
 由于显存有限，所以只使用CPU进行测试。
 
@@ -369,11 +369,11 @@ bash scripts/run_aniclipart.sh
 
 <img src="aniclipart本地部署报告.assets/HQ_gif_iter0.gif" alt="HQ_gif_iter0" style="zoom: 33%;" />
 
-#### (2) num_frames=12     num_iter=5
+##### (2) num_frames=12     num_iter=5
 
 <img src="aniclipart本地部署报告.assets/HQ_gif_iter0-17225680376793.gif" alt="HQ_gif_iter0" style="zoom:33%;" />
 
-#### (3) num_frames=24   num_iter=20
+##### (3) num_frames=24   num_iter=20
 
 在贝塞尔曲线控制点不变的情况下，可以看出当num_iter次数增大，整体的动作幅度会随之增大，
 
@@ -381,7 +381,7 @@ bash scripts/run_aniclipart.sh
 
 ### 三、使用AWS服务器部署
 
-### 3.1 服务器基本配置
+#### 3.1 服务器基本配置
 
 + 4vcpu、100G
 + g4dn-xlarge 16GB内存、1个NVIDIA T4 GPU
@@ -518,7 +518,7 @@ gcc --version
 g++ --version
 ```
 
-### 3.2 运行测试
+#### 3.2 运行测试
 
 在此服务器配置下，iter500次耗时1.5h-2h。
 
@@ -582,7 +582,7 @@ num_frames=12最终可以成功跑起来，虽然出来的动作会不太流畅�
 
 原文链接：https://blog.csdn.net/frigidwinter/article/details/130033162
 
-### 3.3测试结果
+#### 3.3测试结果
 
 (1)使用原有的woman_dance进行50次iter和500次对比
 
@@ -613,23 +613,21 @@ caption:'shark': 'A shark swimming in the ocean'
 
 <img src="aniclipart本地部署报告.assets/shark_500.gif" alt="shark_500" style="zoom: 33%;" />
 
-+ seal
-
-caption: "seal": "A seal is floating up and down in the water, waving its flippers and tail"
-
-![image-20240804094117910](aniclipart本地部署报告.assets/image-20240804094117910.png)|![image-20240804094128788](aniclipart本地部署报告.assets/image-20240804094128788.png)|![image-20240804094136401](aniclipart本地部署报告.assets/image-20240804094136401.png)|
-
 + chicken
 
 caption:"chicken": "A chicken is jumping up and down."
 
 ![image-20240804094246854](aniclipart本地部署报告.assets/image-20240804094246854.png)|![image-20240804094254912](aniclipart本地部署报告.assets/image-20240804094254912.png)|![image-20240804094301350](aniclipart本地部署报告.assets/image-20240804094301350.png)
 
+<img src="aniclipart本地部署报告.assets/chicken.gif" alt="chicken" style="zoom: 33%;" />
+
 + elephant
 
 caption:"elephant": "An elephant jumps and wags its trunk up and down continuously.",
 
 ![image-20240804094312539](aniclipart本地部署报告.assets/image-20240804094312539.png)|![image-20240804094322219](aniclipart本地部署报告.assets/image-20240804094322219.png)|![image-20240804094329785](aniclipart本地部署报告.assets/image-20240804094329785.png)|
+
+<img src="aniclipart本地部署报告.assets/elephant.gif" alt="elephant" style="zoom:33%;" />
 
 ### 四、常见问题
 
@@ -686,3 +684,7 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 [win10，python，安装diffvg - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/560277508)
 
 [Compile diffvg sucess on Windows, give you wheel · Issue #82 · BachiLi/diffvg (github.com)](https://github.com/BachiLi/diffvg/issues/82)
+
+
+
+师兄下午好，我把最新的进度和部署过程都写进报告里面了（https://github.com/youaredream/SD_Learning.git）。为了节省资源，我配了一个能尽可能满足这个的服务器（NVIDA T4 16G），然后在配置和测试的过程中，按照默认的参数配置还是会出现Out of memory,后面经过测试，我把生成视频的帧率调到12左右，能刚好跑起来，再高就还是oom。而且在这种情况下，iter500次需要2h左右。然后aniclipart论文中用的NVIDIA RTX A6000 26G的，他们应该是跑的24帧或者更高的，迭代500次只花了25分钟。所以我跑出来的从图像流畅度稍微会差一点，主要还是帧率有点太低了。其中还有一个问题，对于极少部分的贴图，pydiffvg解析并生成帧的过程中，可能会丢掉一部分比如眼睛之类的，可能就是我svg贴图找的有点复杂了。
