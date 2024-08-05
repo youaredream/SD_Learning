@@ -423,10 +423,11 @@ sudo sh cuda_11.8.0_520.61.05_linux.run
 #安装cudnn，一定要下载tar格式！
 从NVIDIA官网的cudnn下载页面上下载与安装CUDA对应的cudnn，网址为https://developer.nvidia.com/rdp/cudnn-download。选择Ubuntu20.04系统下，CUDA11.8对应的版本，下载完后使用tar -zxvf解压
 然后执行
-cp cuda/lib64/* /usr/local/cuda-11.7/lib64/
-cp cuda/include/* /usr/local/cuda-11.7/include/
+sudo cp cudnn-linux-x86_64-8.9.0.131_cuda11-archive/include/cudnn*.h /usr/local/cuda/include
+sudo cp cudnn-linux-x86_64-8.9.0.131_cuda11-archive/lib/libcudnn*  /usr/local/cuda/lib64/
+sudo chmod a+r /usr/local/cuda/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*
 #输入验证cudnn
-cat /usr/local/cuda-11.7/include/cudnn_version.h | grep CUDNN_MAJOR -A 2 
+cat /usr/local/cuda-11.8/include/cudnn_version.h | grep CUDNN_MAJOR -A 2 
 ```
 
 
@@ -628,6 +629,12 @@ caption:"elephant": "An elephant jumps and wags its trunk up and down continuous
 ![image-20240804094312539](aniclipart本地部署报告.assets/image-20240804094312539.png)|![image-20240804094322219](aniclipart本地部署报告.assets/image-20240804094322219.png)|![image-20240804094329785](aniclipart本地部署报告.assets/image-20240804094329785.png)|
 
 <img src="aniclipart本地部署报告.assets/elephant.gif" alt="elephant" style="zoom:33%;" />
+
++  多层动画生成
+
+<img src="aniclipart本地及AWS部署报告.assets/HQ_gif.gif" alt="HQ_gif" style="zoom:50%;" />
+
+<img src="aniclipart本地及AWS部署报告.assets/HQ_gif_iter490.gif" alt="HQ_gif_iter490" style="zoom:50%;" />
 
 ### 四、常见问题
 
