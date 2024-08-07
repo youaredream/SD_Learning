@@ -784,6 +784,8 @@ path5:
 
 这里分为了3层，将两只后面的图分别单独作为一层。
 
+<img src="aniclipart本地及AWS部署报告.assets/HQ_gif_iter260.gif" alt="HQ_gif_iter260" style="zoom:50%;" />
+
 ### 四、常见问题
 
 （1）LINK : fatal error LNK1104:  “python38.lib”
